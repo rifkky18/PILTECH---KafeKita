@@ -1,0 +1,150 @@
+Enum status_aktif {
+  aktif
+  nonaktif
+}
+
+Enum role_user {
+  admin_hr
+  karyawan
+  pemilik
+}
+
+Enum status_absensi {
+  hadir
+  terlambat
+  alpa
+}
+
+Enum jenis_cuti {
+  izin
+  cuti
+}
+
+Enum status_persetujuan {
+  menunggu
+  disetujui
+  ditolak
+}
+
+Enum status_penggajian {
+  draft
+  final
+}
+
+Table jabatan {
+  id int [pk, increment]
+  nama_jabatan varchar(50) [unique, not null]
+  gaji_pokok decimal(12,2) [not null]
+}
+
+Table shift {
+  id int [pk, increment]
+  nama_shift varchar(30) [not null]
+  jam_masuk time [not null]
+  jam_pulang time [not null]
+}
+
+Table karyawan {
+  id int [pk, increment]
+  nik varchar(16) [unique, not null]
+  nama varchar(100) [not null]
+  no_hp varchar(15)
+  alamat text
+  tanggal_masuk date [not null]
+  jabatan_id int [not null]
+  status status_aktif [not null, default: 'aktif']
+}
+
+Table users {
+  id int [pk, increment]
+  nik varchar(16) [unique, note: 'NIK karyawan; kosong untuk akun yang tidak terkait karyawan']
+  password_hash varchar(255) [not null]
+  role role_user [not null]
+  status status_aktif [not null, default: 'aktif']
+}
+
+Table jadwal {
+  id int [pk, increment]
+  karyawan_id int [not null]
+  shift_id int [not null]
+  tanggal date [not null]
+
+  Indexes {
+    (karyawan_id, tanggal) [unique]
+  }
+}
+
+Table absensi {
+  id int [pk, increment]
+  karyawan_id int [not null]
+  tanggal date [not null]
+  jam_masuk time
+  jam_pulang time
+  status status_absensi [not null]
+
+  Indexes {
+    (karyawan_id, tanggal) [unique]
+  }
+}
+
+Table cuti {
+  id int [pk, increment]
+  karyawan_id int [not null]
+  jenis jenis_cuti [not null]
+  tanggal_mulai date [not null]
+  tanggal_selesai date [not null]
+  alasan text [not null]
+  status status_persetujuan [not null, default: 'menunggu']
+  approver_id int
+  tanggal_pengajuan datetime [not null]
+  tanggal_keputusan datetime
+}
+
+Table lembur {
+  id int [pk, increment]
+  karyawan_id int [not null]
+  tanggal date [not null]
+  jumlah_jam decimal(4,2) [not null]
+  keterangan varchar(255)
+  status status_persetujuan [not null, default: 'menunggu']
+  approver_id int
+  tanggal_keputusan datetime
+}
+
+Table penggajian {
+  id int [pk, increment]
+  karyawan_id int [not null]
+  periode char(7) [not null, note: 'Format YYYY-MM']
+  gaji_pokok decimal(12,2) [not null]
+  lembur decimal(12,2) [not null, default: 0]
+  potongan decimal(12,2) [not null, default: 0]
+  gaji_bersih decimal(12,2) [not null]
+  status status_penggajian [not null, default: 'draft']
+  finalized_at datetime
+
+  Indexes {
+    (karyawan_id, periode) [unique]
+  }
+}
+
+Table audit_log {
+  id int [pk, increment]
+  user_id int [not null]
+  nama_aksi varchar(100) [not null]
+  nama_tabel varchar(50) [not null]
+  record_id int
+  waktu_perubahan datetime [not null]
+  keterangan text
+}
+
+Ref: karyawan.jabatan_id > jabatan.id
+Ref: users.nik > karyawan.nik
+Ref: jadwal.karyawan_id > karyawan.id
+Ref: jadwal.shift_id > shift.id
+Ref: absensi.karyawan_id > karyawan.id
+Ref: cuti.karyawan_id > karyawan.id
+Ref: cuti.approver_id > users.id
+Ref: lembur.karyawan_id > karyawan.id
+Ref: lembur.approver_id > users.id
+Ref: penggajian.karyawan_id > karyawan.id
+Ref: audit_log.user_id > users.id
