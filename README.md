@@ -29,6 +29,30 @@ In addition, [Laracasts](https://laracasts.com) contains thousands of video tuto
 
 You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
 
+## DBML Schema
+
+The project includes a DBML-to-Laravel generator. Install Node.js 18 or newer, then run:
+
+```bash
+php artisan vendor:publish --tag=dbml-to-laravel-stubs
+php artisan dbml:generate database/schema.dbml
+php artisan migrate
+```
+
+The generator skips existing models and migrations unless `--force` is passed. Review generated files before using `--force`.
+
+## Load-Test Dummy Data
+
+`LoadTestSeeder` inserts 100,000 operational dummy rows in batches: 40,000 schedules, 35,000 attendance records, 5,000 leave requests, 10,000 overtime records, and 10,000 payroll records. It also creates supporting dummy departments, shifts, 1,000 employees, and user accounts. Existing demo rows are preserved; deterministic keys make repeated runs safe.
+
+The seeder is restricted to `local` and `testing` environments and is not called from `DatabaseSeeder`. Run it explicitly against a local development database:
+
+```bash
+php artisan db:seed --class=LoadTestSeeder
+```
+
+The generated rows use historical dates in 2024 and are intended for local load testing, not production.
+
 ## Agentic Development
 
 Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
